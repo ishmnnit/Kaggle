@@ -51,6 +51,8 @@ def main():
     # encode result label
     le = LabelEncoder().fit(df.species)
     labels = le.transform(df.species)
+    classes = list(le.classes_)
+    print classes
 
     # drop extra field
     df = df.drop(['species', 'id'], 1)
@@ -62,7 +64,27 @@ def main():
         y_train, y_test = labels[train_index], labels[test_index]
 
     # classification algorithm
-    classification(x_train, y_train, x_test, y_test)
+    # classification(x_train, y_train, x_test, y_test)
+
+    # Predict Test Set
+    favorite_clf = LinearDiscriminantAnalysis()
+    favorite_clf.fit(x_train, y_train)
+    test = pd.read_csv('test.csv')
+    test_ids = test.id
+    test = test.drop(['id'], axis=1)
+    test_predictions = favorite_clf.predict_proba(test)
+    print test_predictions
+
+    # Format DataFrame
+    submission = pd.DataFrame(test_predictions, columns=classes)
+    submission.tail()
+    submission.insert(0, 'id', test_ids)
+    submission.reset_index()
+    submission.tail()
+
+    # Export Submission
+    submission.to_csv('submission.csv', index=False)
+    submission.tail()
 
 
 if __name__ == '__main__':
